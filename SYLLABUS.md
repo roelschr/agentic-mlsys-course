@@ -7,6 +7,24 @@ Total: **30h reading + 60h coding + 20h review = 110h**. No additional mandatory
 homework, provisioning project, dataset collection, or full-paper reading is
 hidden outside these allocations. Setup and test execution count toward coding.
 
+**Reading includes listening and watching.** Follow each week's study resources
+in order: build a mental model with a video, visual explanation, or readable
+chapter before consulting the original equations. The minutes below are total
+study allowances, including pauses, notes, and the **Check** question; they are
+not just playback times. Stop at the named sections, not the end of a website,
+playlist, or paper. At the time limit, record the blocker and resume that week
+in the next available study slot rather than adding homework.
+
+For videos, the linked text adaptation is a **substitute** within the same
+allowance, not a second assignment. Use audio for motivation and verbal recap;
+attention diagrams, equations, and shape annotations need screen or desk time.
+Checks are short predictions or explanations, not extra coding tasks or worked
+solutions. The later implementation and review blocks deepen these first checks.
+New explanatory links and named sections were checked on **2026-09-18**; video
+ranges are stated explicitly. External resources may use different notation or
+frameworks: study the assigned explanations, while the course's stub contracts
+remain authoritative for implementation conventions.
+
 **Local hardware track:** the verified WSL2 + RTX 3090 setup uses the
 [README's uv workflow and device policy](README.md#verified-local-profile-wsl2--rtx-3090).
 Use CUDA for the already-budgeted Week 3 memory and Week 8 transfer experiments;
@@ -76,14 +94,29 @@ differences. Constructor/API contracts and formulas are in the unsolved stubs.
    Scaling cannot recover information already lost in a forward cast. Unscale
    before clipping; reject nonfinite gradients before touching parameters/state.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 60m: [Adam, Kingma & Ba](https://arxiv.org/abs/1412.6980), Algorithm 1 and
-  bias-correction discussion; compare on paper to momentum SGD.
-- 60m: [Decoupled Weight Decay Regularization](https://arxiv.org/abs/1711.05101),
-  §§2–3 and AdamW algorithm; derive why the SGD equivalence needs an LR factor.
-- 60m: [Mixed Precision Training](https://arxiv.org/abs/1710.03740), §§2–3:
-  master weights, loss scaling, and FP32 reductions. Inspect `torch.finfo`.
+- 45m: [Why Momentum Really Works](https://distill.pub/2017/momentum/) — Gabriel
+  Goh, interactive visual essay. Prerequisite: gradients and vector updates.
+  Read the opening explanation, then explore the plots in “The Dynamics of
+  Momentum”; leave the eigenvalue proofs and later examples for another time.
+  Purpose: distinguish acceleration from simply smoothing a noisy gradient.
+  **Check:** can momentum produce an oscillating loss even on a smooth quadratic?
+- 45m: [The Ultra-Scale Playbook: precision](https://huggingface.co/spaces/nanotron/ultrascale-playbook)
+  — Hugging Face, illustrated technical guide. Prerequisite: floating-point
+  exponent/fraction bits from the core concepts above. Read only “Mixed Precision
+  Training” and “FP16 and BF16 training,” stopping before FP8. Purpose: connect
+  representable range, loss scaling, and higher-precision state.
+  **Check:** which kind of information loss cannot be repaired by loss scaling?
+- 45m: [Adam, Kingma & Ba](https://arxiv.org/abs/1412.6980) — primary-source
+  excerpt. Prerequisite: the momentum introduction. Study Algorithm 1 and the
+  bias-correction discussion only; the paper supplies the exact state convention.
+  **Check:** why are the initial moment estimates biased toward zero?
+- 45m: [Decoupled Weight Decay Regularization](https://arxiv.org/abs/1711.05101)
+  — Loshchilov & Hutter, primary-source excerpt. Prerequisite: Adam's two moments.
+  Focus on §2's comparison of L2 regularization and decoupled decay, using the
+  algorithm to identify the distinction rather than transcribing it.
+  **Check:** when does the SGD equivalence stop carrying over to Adam?
 
 ### Target implementation drill (6h)
 
@@ -139,14 +172,30 @@ tests. Record one FP16 overflow and one BF16 rounding observation.
    feature pairs by `pω_j`, `ω_j=base^(−2j/D)`; in complex form,
    `(x_(2j)+i x_(2j+1)) exp(i pω_j)`. Its dot product depends on relative position.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 60m: [Layer Normalization](https://arxiv.org/abs/1607.06450), §§2–3 and its
-  BatchNorm comparison. Write the normalized axes for `[B,T,D]` explicitly.
-- 45m: [Root Mean Square Layer Normalization](https://arxiv.org/abs/1910.07467),
-  §§3–4; derive the input and scale gradients rather than copying a kernel.
-- 75m: [RoFormer](https://arxiv.org/abs/2104.09864), §3.2, rotation and relative
-  inner-product equations; compare to its absolute-position discussion.
+- 45m: [Dive into Deep Learning: residual connection and layer normalization](https://d2l.ai/chapter_attention-mechanisms-and-transformers/transformer.html#residual-connection-and-layer-normalization)
+  — Zhang, Lipton, Li & Smola, textbook explanation. Prerequisite: tensor axes,
+  means, and variance. Read §11.7.3's explanatory text and normalization comparison;
+  skip the implementation listings and later model-building sections. Purpose:
+  make the normalization axes concrete before studying a backward pass.
+  **Check:** which statistics would couple different examples in `[B,T,D]`?
+- 45m: [The Illustrated Transformer: positions](https://jalammar.github.io/illustrated-transformer/)
+  — Jay Alammar, visual article. Prerequisite: embeddings and dot products.
+  Read only “Representing The Order of The Sequence Using Positional Encoding”
+  and “The Residuals.” Purpose: understand what position information and residual
+  paths contribute; this is an absolute-position, post-norm baseline, not RoPE.
+  **Check:** what information is missing if token embeddings have no position signal?
+- 45m: [Root Mean Square Layer Normalization](https://arxiv.org/abs/1910.07467)
+  — Zhang & Sennrich, primary-source excerpt. Prerequisite: the normalization
+  introduction. Read §3's RMSNorm definition and invariance discussion, then
+  annotate the normalized axes. Purpose: isolate the effect of removing centering.
+  **Check:** is a constant feature shift still an invariance?
+- 45m: [RoFormer](https://arxiv.org/abs/2104.09864) — Su et al., primary-source
+  excerpt. Prerequisite: 2D rotations and the position introduction. Focus on
+  §3.2's rotation and relative inner-product equations. Purpose: replace the
+  additive baseline with the course's rotary position convention.
+  **Check:** which quantity depends on relative rather than absolute position?
 
 ### Target implementation drill (6h)
 
@@ -198,13 +247,31 @@ and RoPE input `gradcheck`. Odd head width must be rejected.
    `z′=exp(m−m′)z+Σ exp(S−m′)v`; final output `z′/ℓ′`.
    Fully masked rows need an explicit zero-output convention.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 45m: [Fast Transformer Decoding / MQA](https://arxiv.org/abs/1911.02150),
-  §§2–3; count bytes per decode step.
-- 45m: [GQA](https://arxiv.org/abs/2305.13245), §2 and Figure 2.
-- 90m: [FlashAttention](https://arxiv.org/abs/2205.14135), §§2–3 and Algorithm 1;
-  derive the tile merge with two scalar score tiles.
+- 45m: [Attention in transformers, step-by-step](https://www.youtube.com/watch?v=eMlx5fFNoYc)
+  — Grant Sanderson / 3Blue1Brown, visual video; **00:00–26:09**, plus pauses and
+  notes. Prerequisite: dot products and softmax. Alternatively, read the
+  [text adaptation](https://www.3blue1brown.com/lessons/attention/), “Attention”
+  through the multi-head explanation. Purpose: give Q, K, V and causal masking
+  a visual meaning. **Check:** which axis must sum to one for each query? Translate
+  the video's column-vector convention to the course's `[Tq,Tk]` score matrix.
+- 35m: [How to Scale Your Model: inference basics](https://jax-ml.github.io/scaling-book/inference/)
+  — Austin et al., illustrated systems chapter. Prerequisite: the attention video.
+  Read “The Basics of Transformer Inference,” stopping before “What do we actually
+  want to optimize?” Purpose: distinguish prefill, one-token generation, and the
+  role of saved K/V. Use the explanation, not its later engine implementation.
+  **Check:** what computation is reused when a prefix is extended by one token?
+- 45m: [GQA](https://arxiv.org/abs/2305.13245) — Ainslie et al., primary-source
+  excerpt; §2 and Figure 2. Prerequisite: Q/K/V heads and the cache introduction.
+  Purpose: make MHA, MQA, and grouped sharing precise without changing query count.
+  **Check:** if only `Hkv` is halved, which persistent cache bytes are halved?
+- 55m: [FlashAttention](https://arxiv.org/abs/2205.14135) — Dao et al.,
+  primary-source excerpt. Prerequisite: stable softmax and the memory distinction
+  above. Read §2's memory hierarchy and §3's tiling/recomputation explanation;
+  use Algorithm 1 only to locate the running normalization statistics. Purpose:
+  separate exact attention from its IO schedule, without adding a kernel task.
+  **Check:** why can reducing memory traffic matter even without fewer attention FLOPs?
 
 ### Target implementation drill (6h)
 
@@ -259,14 +326,33 @@ valid data, score temporaries, and allocator overhead.
    For k=1 this is Switch's convention; for k>1 it is this course's explicit
    extension. Count assignments before dropping; uniform routing has loss 1.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 45m: [GLU Variants Improve Transformer](https://arxiv.org/abs/2002.05202),
-  §2 and parameter-matched comparisons.
-- 75m: [Switch Transformers](https://arxiv.org/abs/2101.03961), §2 routing,
-  capacity, and auxiliary-loss equations (4)–(6).
-- 60m: [GShard](https://arxiv.org/abs/2006.16668), §3 and top-2 gating discussion;
-  compare communication and dropped-token behavior to the top-1 design.
+- 40m: [How might LLMs store facts](https://www.youtube.com/watch?v=9-Jl0dxWQs8)
+  — Grant Sanderson / 3Blue1Brown, visual video; **00:00–22:42**, plus pauses and
+  notes. Prerequisite: linear maps and the Week 3 attention introduction.
+  Alternatively, read the [text adaptation](https://www.3blue1brown.com/lessons/mlp/),
+  “Where are facts in LLMs stored?” through “Superposition.” Purpose: understand
+  the tokenwise MLP's role before studying gates; the video's ReLU example is
+  an illustration, not evidence that every fact occupies one neuron.
+  **Check:** which operation mixes tokens, and which operates on each token separately?
+- 50m: [Mixture of Experts Explained](https://huggingface.co/blog/moe)
+  — Hugging Face, illustrated explainer. Prerequisite: the MLP introduction.
+  Read “What is a Mixture of Experts (MoE)?,” “Load balancing tokens for MoEs,”
+  “Switch Transformers,” and “Capacity Factor and communication costs.” Purpose:
+  build an intuition for sparse activation, overloaded experts, and capacity.
+  **Check:** why does increasing expert count not mean every token uses more experts?
+- 30m: [GLU Variants Improve Transformer](https://arxiv.org/abs/2002.05202)
+  — Shazeer, primary-source excerpt. Prerequisite: the MLP introduction. Read §2's
+  gated activation definitions and parameter-matched comparison. Purpose:
+  distinguish the illustrative ReLU MLP from the course's SwiGLU component.
+  **Check:** why must hidden width change when comparing two and three projections?
+- 60m: [Switch Transformers](https://arxiv.org/abs/2101.03961) — Fedus et al.,
+  primary-source excerpt. Prerequisite: the MoE explainer. Focus on §2's routing,
+  capacity, and auxiliary-loss equations (4)–(6). Purpose: ground the intuition
+  in the top-1 formulation, then identify the course's explicitly stated top-k
+  extension in the core concepts. **Check:** can a balanced average routing
+  probability guarantee that no token is dropped?
 
 ### Target implementation drill (6h)
 
@@ -324,14 +410,32 @@ expert's exact retained assignments before running the fixture.
    independent cross-entropy on two chosen/rejected labels. β is the reference
    regularization parameter and also scales this margin.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 45m: [InstructGPT](https://arxiv.org/abs/2203.02155), §3 and Figure 2:
-  SFT/reward-model/PPO data and model roles.
-- 45m: [PPO](https://arxiv.org/abs/1707.06347), clipped objective in §3;
-  identify which ratios and advantages are held fixed during an update.
-- 90m: [DPO](https://arxiv.org/abs/2305.18290), §§3–4, equations (4)–(7),
-  and the optimal-policy derivation. Re-derive the partition cancellation.
+- 45m: [RLHF Book: Training Overview](https://rlhfbook.com/c/03-training-overview)
+  — Nathan Lambert, explanatory chapter. Prerequisite: next-token likelihood.
+  Read “Fine-Tuning and Regularization,” “Optimization Tools,” and “InstructGPT:
+  Foundational RLHF Tools,” including the pipeline diagram. Purpose: establish
+  the SFT, reward-model, and policy-optimization roles before formal objectives.
+  **Check:** what different supervision does each stage receive?
+- 50m: [RLHF Book: Direct-Alignment Algorithms](https://rlhfbook.com/c/08-direct-alignment)
+  — Nathan Lambert, explanatory chapter. Prerequisite: the training overview
+  and log probabilities. Read “Direct Preference Optimization” and “How DPO Works,”
+  then the prose framing of “Deriving the Optimal RLHF Solution”; save the detailed
+  derivation for the paper block and skip implementation listings. Purpose: explain
+  why paired preferences can train a policy without a separate learned critic.
+  **Check:** what role does the reference policy play when there is no reward model?
+- 30m: [InstructGPT](https://arxiv.org/abs/2203.02155) — Ouyang et al.,
+  primary-source figure study. Prerequisite: the overview. Spend 10m on Figure 2
+  and §3's model roles, 15m on [PPO](https://arxiv.org/abs/1707.06347), Schulman
+  et al., §3's clipped-objective equation, and 5m on the check. Purpose: locate
+  the additional machinery avoided by this week's DPO drill.
+  **Check:** which policy supplies PPO's denominator, and is it the frozen RLHF reference?
+- 55m: [DPO](https://arxiv.org/abs/2305.18290) — Rafailov et al., primary-source
+  excerpt. Prerequisite: the direct-alignment explanation. Focus on §§3–4,
+  equations (4)–(7), and the optimal-policy derivation. Purpose: connect the
+  explanatory picture to the pairwise log-ratio objective.
+  **Check:** why do the prompt-dependent partition terms cancel for this pair?
 
 ### Target implementation drill (6h)
 
@@ -385,14 +489,30 @@ contribute to each objective.
    negatives and stale embeddings can damage retrieval. A mined index is
    nondifferentiable selection, not a differentiable softmax distribution.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 60m: [CPC](https://arxiv.org/abs/1807.03748), §2.3 and InfoNCE bound discussion;
-  identify the assumptions behind the mutual-information interpretation.
-- 60m: [SimCLR](https://arxiv.org/abs/2002.05709), §2 and §4 temperature/normalization
-  ablations. Note its two-view masking differs from the paired cross-modal setup.
-- 60m: [CLIP](https://arxiv.org/abs/2103.00020), §2.3 and Figure 3;
-  trace both directions of its paired classification objective.
+- 45m: [Contrastive Representation Learning: pairs and geometry](https://lilianweng.github.io/posts/2021-05-31-contrastive/)
+  — Lilian Weng, illustrated article. Prerequisite: dot products and classification.
+  Read the opening motivation, “Common Setup,” and the “CLIP” section's diagram
+  and explanation. Purpose: picture positive pairs and in-batch competitors
+  before interpreting a mutual-information bound.
+  **Check:** why can two semantically matching examples become false negatives?
+- 45m: [Contrastive Representation Learning: temperature and negatives](https://lilianweng.github.io/posts/2021-05-31-contrastive/)
+  — Lilian Weng, explanatory article. Prerequisite: the pairs introduction.
+  Read “InfoNCE,” “Large Batch Size,” “Hard Negative Mining,” and “SimCLR.” Purpose:
+  connect temperature and normalized embeddings to the difficulty of distinguishing
+  pairs; note that SimCLR's two-view masking is not the course's paired matrix.
+  **Check:** does making negatives harder always make the learning signal better?
+- 45m: [CPC](https://arxiv.org/abs/1807.03748) — van den Oord et al.,
+  primary-source excerpt. Prerequisite: the explanatory InfoNCE section. Read
+  §2.3 and its bound discussion only. Purpose: distinguish the useful classification
+  objective from the assumptions required for its mutual-information interpretation.
+  **Check:** which sampling assumption would semantic duplicates put under pressure?
+- 45m: [CLIP](https://arxiv.org/abs/2103.00020) — Radford et al., primary-source
+  excerpt. Prerequisite: paired classification and normalized similarity.
+  Read §2.3 and Figure 3 for the objective, without transcribing its pseudocode.
+  Purpose: identify the two classification directions and the role of temperature.
+  **Check:** why is a row-only loss different from the symmetric objective?
 
 ### Target implementation drill (6h)
 
@@ -447,13 +567,31 @@ negative even though its test labels declare it negative.
    forward/backward after warmup to reduce saved activations relative to GPipe;
    it does not by itself eliminate fill/drain bubbles. TP×PP×DP is 3D parallelism.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 75m: [Megatron-LM](https://arxiv.org/abs/1909.08053), §3 and Figure 3;
-  annotate forward and backward communication around the two linears.
-- 45m: [GPipe](https://arxiv.org/abs/1811.06965), §2, microbatching and bubbles.
-- 60m: [Efficient Large-Scale Language Model Training / Megatron](https://arxiv.org/abs/2104.04473),
-  §§2–3 and pipeline schedule figures; compare 1F1B, interleaving, and DP groups.
+- 60m: [The Ultra-Scale Playbook: collectives and tensor parallelism](https://huggingface.co/spaces/nanotron/ultrascale-playbook)
+  — Hugging Face, illustrated systems guide. Prerequisite: matrix products and
+  tensor shapes. Spend 20m on Appendix A0's “Reduce & AllReduce,” “Gather &
+  AllGather,” and “Scatter & ReduceScatter,” then 30m on “Tensor Parallelism” and
+  its transformer-block diagrams, and 10m on the check. Purpose: visualize tensor
+  ownership before assigning a collective to a gradient path.
+  **Check:** how does a replicated sum differ from one owned shard of that sum?
+- 40m: [The Ultra-Scale Playbook: pipeline schedules](https://huggingface.co/spaces/nanotron/ultrascale-playbook)
+  — Hugging Face, visual explanation. Prerequisite: forward/backward dependencies.
+  Read “Pipeline Parallelism,” “Splitting layers on various nodes - All forward,
+  all backward,” and “One-forward-one-backward and LLama 3.1 schemes”; stop before
+  interleaving. Purpose: make bubbles and saved activations visible on a timeline.
+  **Check:** what changes in activation residency when backward starts earlier?
+- 45m: [Megatron-LM](https://arxiv.org/abs/1909.08053) — Shoeybi et al.,
+  primary-source excerpt. Prerequisite: the collective and TP diagrams. Read §3
+  and Figure 3. Purpose: tie the ownership picture to row/column partitions and
+  the paper's forward/backward communication conventions.
+  **Check:** why is differentiating two physical replicas not two logical losses?
+- 35m: [Efficient Large-Scale Language Model Training / Megatron](https://arxiv.org/abs/2104.04473)
+  — Narayanan et al., primary-source figure study. Prerequisite: the pipeline
+  introduction. Focus on §§2–3's pipeline schedule figures and DP/TP/PP grouping,
+  rather than benchmark tables. Purpose: relate the simple timeline to 3D ownership.
+  **Check:** does 1F1B by itself remove the pipeline's fill and drain bubbles?
 
 ### Target implementation drill (6h)
 
@@ -517,15 +655,34 @@ eight-rank 3D ownership sketch. Both sketches are within the six coding hours.
    for overlap: streams, dependencies, lifetimes, and useful concurrent work
    matter. Avoid `.item()`/synchronization in a measured hot path.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 60m: [ZeRO](https://arxiv.org/abs/1910.02054), §§3–5; reconstruct its state
-  ledger under this course's explicitly different dtype choices.
-- 75m: [Fast Inference from Transformers via Speculative Decoding](https://arxiv.org/abs/2211.17192),
-  Algorithm 1 and distribution-preservation argument.
-- 45m: [PyTorch pin-memory and non-blocking transfer tutorial](https://pytorch.org/tutorials/intermediate/pinmem_nonblock.html),
-  pinned/pageable comparisons, stream overlap conditions, and synchronization
-  caveats. Read it as evidence about data movement, not as a training wrapper.
+- 60m: [The Ultra-Scale Playbook: ZeRO memory diagrams](https://huggingface.co/spaces/nanotron/ultrascale-playbook)
+  — Hugging Face, illustrated systems guide. Prerequisite: Week 7's tensor
+  ownership picture. Spend 35m on “Memory usage revisited” and the ZeRO-1/2/3
+  partitioning sections, then 20m on [ZeRO](https://arxiv.org/abs/1910.02054),
+  Rajbhandari et al., §§3–5's state-partitioning figures, and 5m on the check.
+  Purpose: move from diagrams to a ledger with explicit dtype assumptions.
+  **Check:** why can the course's byte totals differ from a source's totals even
+  when the same tensors are partitioned?
+- 40m: [PyTorch pin-memory and non-blocking transfer tutorial](https://docs.pytorch.org/tutorials/intermediate/pinmem_nonblock.html)
+  — PyTorch, illustrated practical documentation. Prerequisite: host/device
+  memory and asynchronous operations. Read “Background,” especially the memory
+  and asynchronous-copy explanations, then “Practical recommendations.” Purpose:
+  interpret the timelines and synchronization caveats; measurements belong in
+  the already-budgeted implementation worksheet, not this study block.
+  **Check:** why is pinned memory alone insufficient to overlap a copy with compute?
+- 35m: [How to Scale Your Model: speculative sampling](https://jax-ml.github.io/scaling-book/inference/)
+  — Austin et al., visual systems explanation. Prerequisite: prefill vs. decode
+  from Week 3. Read only “Appendix D: Speculative Sampling.” Purpose: build the
+  draft/verification picture from its greedy example before reading exact sampling.
+  **Check:** why does a greedy-prefix illustration not prove distribution preservation?
+- 45m: [Fast Inference from Transformers via Speculative Decoding](https://arxiv.org/abs/2211.17192)
+  — Leviathan et al., primary-source excerpt. Prerequisite: the draft/verification
+  explanation and conditional probabilities. Read Algorithm 1 alongside its
+  distribution-preservation argument, focusing on one proposed token. Purpose:
+  supply the correction absent from a purely greedy illustration.
+  **Check:** what distribution must the total accepted and rejected probability mass recover?
 
 ### Target implementation drill (6h)
 
@@ -613,14 +770,33 @@ is the end-to-end entry point, with no dataset download or manual checkpoint pre
 3. Parameter/moment/activation/cache ownership in the assembled model. Every
    trainable scale and projection must appear in the optimizer's parameter set.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 60m: [LLaMA](https://arxiv.org/abs/2302.13971), §2 architecture and pre-norm,
-  SwiGLU, and RoPE choices; do not replicate its scale or data pipeline.
-- 60m: [Attention Is All You Need](https://arxiv.org/abs/1706.03762), §§3.1–3.3
-  and autoregressive masking, then contrast pre-norm to its original arrangement.
-- 60m: revisit the Week 1 AdamW and Week 2 RMSNorm equations against your own
-  shape/byte ledger; this is targeted integration reading, not another paper.
+- 45m: [Transformers, the tech behind LLMs](https://www.youtube.com/watch?v=wjZofJX0v4M)
+  — Grant Sanderson / 3Blue1Brown, visual video; **00:00–27:14**, plus pauses and
+  notes. Prerequisite: Weeks 1–4's components. Alternatively, read the
+  [text adaptation](https://www.3blue1brown.com/lessons/gpt/), “What is a GPT model?”
+  through “And That's The Overall Structure.” Purpose: reconnect the isolated
+  mechanisms to the overall token-to-logits computation.
+  **Check:** which dimensions represent sequence positions and which represent vocabulary?
+- 45m: [The Illustrated Transformer: decoder and training](https://jalammar.github.io/illustrated-transformer/)
+  — Jay Alammar, visual article. Prerequisite: the decoder overview. Read “The
+  Residuals,” “The Decoder Side,” “The Final Linear and Softmax Layer,” and “Recap
+  Of Training”; stop before “The Loss Function.” Purpose: interpret residual,
+  causal, and output paths. Its encoder-decoder and post-norm design differs from
+  this course's decoder-only pre-norm design; use the core concepts to contrast them.
+  **Check:** which pictured attention sublayer is absent from a decoder-only model?
+- 45m: [LLaMA](https://arxiv.org/abs/2302.13971) — Touvron et al., primary-source
+  excerpt. Prerequisite: the architectural overview. Read §2's architecture
+  choices for pre-norm, RMSNorm, SwiGLU, and RoPE, not the data pipeline. Purpose:
+  distinguish these modern choices from the preceding historical illustrations;
+  this course additionally uses GQA rather than reproducing original LLaMA exactly.
+  **Check:** which distinctions would change the shape or ownership ledger?
+- 45m: revisit your Week 1–5 notes — self-authored synthesis, with no new source.
+  Prerequisite: the completed component weeks. Spend 30m annotating your existing
+  shape/dtype/byte ledger with the architecture differences, then 15m explaining
+  it aloud. Purpose: identify integration assumptions before the coding block.
+  **Check:** which quantities exist during training, inference, or both?
 
 ### Integration deliverable (6h)
 
@@ -674,15 +850,34 @@ and model/optimizer/activation/cache ownership explained.
    contract. Count prefill separately from time per output token; synchronize
    before timing on accelerators. Performance remains observational.
 
-### Reading & primary sources (3h total)
+### Reading & guided study (3h total)
 
-- 60m: revisit [DPO](https://arxiv.org/abs/2305.18290), §4 practical loss and
-  reference-policy assumptions; connect the paper's sequence scores to masks.
-- 60m: revisit [GQA](https://arxiv.org/abs/2305.13245), §2 and decoding motivation;
-  derive this capstone's exact cache capacity and used bytes.
-- 60m: revisit [FlashAttention](https://arxiv.org/abs/2205.14135), IO analysis,
-  and the Week 8 transfer tutorial; explain why this unfused toy engine is a
-  correctness reference rather than a production inference-kernel benchmark.
+- 65m: [Direct Preference Optimization (DPO) and Friends](https://www.youtube.com/watch?v=6g6b4gvO-y0)
+  — Nathan Lambert, Post-Training Course lecture 6; **00:00–42:44**, plus pauses
+  and notes. Prerequisite: Week 5's objective and the Week 9 SFT checkpoint.
+  Alternatively, revisit the [RLHF Book's direct-alignment chapter](https://rlhfbook.com/c/08-direct-alignment),
+  “How DPO Works” through “Numerical Concerns, Weaknesses, and Alternatives,”
+  stopping before implementation listings. Purpose: revisit the derivation and
+  limitations with a policy model now in view; variants are context, not new drills.
+  **Check:** what assumption fails if policy and reference parameters alias?
+- 50m: [How to Scale Your Model: inference costs](https://jax-ml.github.io/scaling-book/inference/)
+  — Austin et al., illustrated systems chapter. Prerequisite: Week 3's cache
+  basics. Read “What do we actually want to optimize?,” “What about attention?,”
+  and “What about memory?” Purpose: distinguish prefill, decode, cache residency,
+  and latency/throughput objectives. Keep accelerator-specific estimates separate
+  from measurements of this toy model. **Check:** why can fewer recomputed FLOPs
+  fail to produce the same proportional latency improvement?
+- 35m: [DPO](https://arxiv.org/abs/2305.18290) — Rafailov et al., targeted
+  primary-source revisit. Prerequisite: the lecture or substitute chapter.
+  Re-read §4's practical objective and reference-policy assumptions, connecting
+  its sequence scores to the course's response-only masking contract.
+  **Check:** why does response-length averaging change the objective?
+- 30m: [GQA](https://arxiv.org/abs/2305.13245) — Ainslie et al., targeted
+  primary-source revisit. Prerequisite: the inference-cost explanation. Spend
+  15m revisiting §2 and 15m comparing the paper's decode motivation to your own
+  cache-capacity and valid-length ledger. Purpose: ground the final memory report
+  in explicit head count, dtype, and sequence length.
+  **Check:** which storage changes when valid length grows inside fixed capacity?
 
 ### Integration deliverable (6h)
 

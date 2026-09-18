@@ -51,6 +51,11 @@ For a review, record:
 ## Course constraints
 
 - Every week is exactly 11 hours: 3 reading, 6 implementation, 2 Socratic review.
+- The reading allocation includes listening and watching. Introduce each topic
+  with approachable videos, visual explanations, or readable chapters before
+  targeted primary-source excerpts. Budget pauses, notes, and comprehension
+  questions inside that allocation; alternative formats replace assignments
+  rather than adding homework. Verify links and bound sections/video ranges.
 - Weeks 1–8: at most two components, each under 150 nonblank, noncomment
   implementation lines (excluding supplied docstrings/tests). No weekly model
   build or training-loop assignment.

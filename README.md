@@ -45,6 +45,23 @@ agentic-mlsys-course/
 `notes/` and `artifacts/` are created by you when first needed. Environment-specific
 and existing hidden configuration files are omitted from the tree.
 
+## Local study companion
+
+For a desktop reading workspace with a dark Field Guide layout, side-by-side
+papers and notes, and locally saved progress, run from the repository root:
+
+```bash
+python -m study_companion
+```
+
+Open **http://localhost:8765**. The companion uses Python's standard library and
+reads all ten weeks directly from `SYLLABUS.md`. Notes autosave to `notes/weekNN.md`;
+progress lives in Git-ignored `.study-companion/progress.json`. Time logging is
+optional and editable, and the focus timer never logs time automatically.
+
+See [the companion guide](study_companion/README.md) for file locations, the
+reading pane, conflict recovery, startup options, and its independent test command.
+
 ## Local environment
 
 Use Python **3.10 or newer** with a compatible PyTorch release (2.5 or newer).
@@ -144,7 +161,11 @@ in capstone assembly. No tokenizer package or downloaded dataset is required.
 ## Study workflow
 
 1. Open [SYLLABUS.md](SYLLABUS.md). Reserve **3h reading + 6h coding + 2h review**.
-   Reading means the named equations/sections, not every page of every source.
+   The reading allocation includes listening and watching. Follow the listed
+   sequence: approachable explanations first, targeted paper excerpts afterward.
+   Each allowance includes pauses, notes, and its comprehension question. Use a
+   video's text alternative instead of the video, not in addition to it; stop at
+   the named sections or timestamps rather than completing whole sites/playlists.
 2. Derive the formula, annotate shapes and dtypes, and predict two edge cases in
    `notes/weekNN.md` before implementing. This is part of the coding allocation.
 3. Implement only that week's one or two stubs. Keep each component under 150

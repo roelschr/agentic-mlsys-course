@@ -13,7 +13,10 @@ dependencies = ["torch>=2.5", "numpy>=1.24"]
 dev = ["pytest>=8"]
 
 [tool.setuptools.packages.find]
-include = ["drills*", "capstone*"]
+include = ["drills*", "capstone*", "study_companion*"]
+
+[tool.setuptools.package-data]
+study_companion = ["static/*.html", "static/*.css", "static/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
