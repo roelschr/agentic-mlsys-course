@@ -104,6 +104,41 @@ def test_dpo_scores_sum_responses_and_ignore_padding():
         assert padded[key] == pytest.approx(metrics[key], abs=2e-5)
 
 
+def test_dpo_zero_steps_uses_supplied_reference():
+    policy = _tiny().eval()
+    reference = copy.deepcopy(policy)
+    chosen, rejected, cm, rm = _preferences()
+    beta = 0.7
+    with torch.no_grad():
+        # Deliberately distinct weights, independent of the decoder's initialization.
+        for parameter in reference.parameters():
+            parameter.uniform_(-0.5, 0.5)
+        margins = []
+        for model in (policy, reference):
+            chosen_nll = F.cross_entropy(model(chosen[:, :-1]).transpose(1, 2),
+                                         chosen[:, 1:], reduction="none")
+            rejected_nll = F.cross_entropy(model(rejected[:, :-1]).transpose(1, 2),
+                                           rejected[:, 1:], reduction="none")
+            margins.append((rejected_nll * rm[:, 1:]).sum(-1)
+                           - (chosen_nll * cm[:, 1:]).sum(-1))
+        expected_loss = F.binary_cross_entropy_with_logits(
+            beta * (margins[0] - margins[1]), torch.ones_like(margins[0])).item()
+        reference_free_loss = F.binary_cross_entropy_with_logits(
+            beta * margins[0], torch.ones_like(margins[0])).item()
+    # Ensure this fixture detects both replacing the reference and omitting it.
+    assert expected_loss != pytest.approx(math.log(2), abs=1e-5)
+    assert expected_loss != pytest.approx(reference_free_loss, abs=1e-5)
+    snapshots = [copy.deepcopy(model.state_dict()) for model in (policy, reference)]
+    metrics = project.fit_dpo(policy, reference, chosen, rejected, cm, rm,
+                              steps=0, beta=beta)
+    for stage in ("initial", "final"):
+        assert metrics[f"{stage}_loss"] == pytest.approx(expected_loss, abs=1e-5)
+        assert metrics[f"{stage}_margin"] == pytest.approx(margins[0].mean().item(), abs=1e-5)
+    for model, snapshot in zip((policy, reference), snapshots):
+        for name, tensor in model.state_dict().items():
+            torch.testing.assert_close(tensor, snapshot[name], rtol=0, atol=0)
+
+
 def test_dpo_improves_margin_and_reference_is_frozen():
     policy = _tiny()
     reference = copy.deepcopy(policy)
@@ -149,6 +184,38 @@ def test_cached_forward_chunk_offsets_capacity_and_atomic_rejection():
         assert cache.length == 6
         torch.testing.assert_close(cache.k, k, equal_nan=True)
         torch.testing.assert_close(cache.v, v, equal_nan=True)
+
+
+@pytest.mark.parametrize("invalid", ["length", "capacity"])
+def test_cached_forward_later_layer_rejection_is_atomic(invalid):
+    model = _tiny().eval()
+    engine = project.CacheEngine(model, capacity=8)
+    tokens = torch.tensor([[1, 2, 3]])
+    assert len(engine.caches) == 2
+    if invalid == "capacity":
+        first = engine.caches[0]
+        engine.caches[1] = project.StaticKVCache(
+            1, model.n_kv_heads, 2, model.head_dim,
+            dtype=first.k.dtype, device=first.k.device)
+    with torch.no_grad():
+        # Initialize unused storage too, so every element can be checked exactly.
+        for cache in engine.caches:
+            cache.k.fill_(-11)
+            cache.v.fill_(-13)
+        model(tokens[:, :2], caches=engine.caches, offset=0)
+    assert all(cache.length == 2 for cache in engine.caches)
+    if invalid == "length":
+        engine.caches[1].length = 1
+    pointers = _cache_pointers(engine.caches)
+    saved = [(cache.length, cache.k.clone(), cache.v.clone()) for cache in engine.caches]
+    # Layer 1 can accept this token; only layer 2 must reject it.
+    with torch.no_grad(), pytest.raises(ValueError):
+        model(tokens[:, 2:], caches=engine.caches, offset=2)
+    assert _cache_pointers(engine.caches) == pointers
+    for cache, (length, k, v) in zip(engine.caches, saved):
+        assert cache.length == length
+        torch.testing.assert_close(cache.k, k, rtol=0, atol=0, equal_nan=True)
+        torch.testing.assert_close(cache.v, v, rtol=0, atol=0, equal_nan=True)
 
 
 def test_engine_greedy_matches_full_logits_and_reuses_cache():
