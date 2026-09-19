@@ -58,15 +58,15 @@ def load_course(repo):
         verification = by_title.get("PyTest verification target", "")
         commands = re.findall(r"`(python -m pytest [^`]+)`", verification)
         resources = reading_assignments(readings)
-        if not resources or sum(item["minutes"] for item in resources) != 180:
-            raise ValueError(f"Week {number} must contain its full 180-minute reading allocation.")
+        if not resources or sum(item["minutes"] for item in resources) != 480:
+            raise ValueError(f"Week {number} must contain its full 480-minute guided-study allocation.")
         if not commands:
             raise ValueError(f"Week {number} has no pytest verification command.")
         checkpoint = re.search(r"\*\*(?:Final checkpoint|Checkpoint):\*\* ([\s\S]+)$", body)
         weeks.append({
             "number": number,
             "title": match[2],
-            "budget": {"reading": 180, "implementation": 360, "review": 120},
+            "budget": {"reading": 480, "implementation": 120, "review": 120},
             "resources": resources,
             "concepts": by_title.get("Core concepts", ""),
             "implementation": next((value for key, value in parts if key.startswith(("Target implementation", "Integration deliverable"))), ""),

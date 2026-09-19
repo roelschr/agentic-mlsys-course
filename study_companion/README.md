@@ -41,7 +41,7 @@ in your Windows browser. Keep one server running per progress/notes directory.
   or verifies a learner's claim automatically.
 - **Time:** optional, editable totals in minutes for reading, implementation, and
   review. “Reading” includes watching/listening, pauses, notes, and comprehension
-  checks. Checking a resource does not log time. At 11 logged hours, record the
+  checks. Checking a resource does not log time. At 12 logged hours, record the
   blocker and resume the same week in the next available study slot.
 - **Focus timer:** an optional 25-minute countdown in the reader. It pauses when
   the tab is hidden or the reader closes. It never changes logged time, and resets

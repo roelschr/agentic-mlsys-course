@@ -50,7 +50,7 @@ For a review, record:
 
 ## Course constraints
 
-- Every week is exactly 11 hours: 3 reading, 6 implementation, 2 Socratic review.
+- Every week is exactly 12 hours: 8 reading, 2 implementation, 2 Socratic review.
 - The reading allocation includes listening and watching. Introduce each topic
   with approachable videos, visual explanations, or readable chapters before
   targeted primary-source excerpts. Budget pauses, notes, and comprehension
@@ -59,7 +59,7 @@ For a review, record:
 - Weeks 1–8: at most two components, each under 150 nonblank, noncomment
   implementation lines (excluding supplied docstrings/tests). No weekly model
   build or training-loop assignment.
-- Weeks 9–10: one capstone, six implementation hours each week. Keep its glue to
+- Weeks 9–10: one capstone, two implementation hours each week. Keep its glue to
   four components under 150 implementation lines each: model, SFT runner,
   DPO runner, cache engine. Reuse the earlier components.
 - Learner code uses raw PyTorch, NumPy, or Triton and the Python standard library.

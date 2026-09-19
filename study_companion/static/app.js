@@ -56,9 +56,10 @@ function toast(message) {
 
 const pad = value => String(value).padStart(2, "0");
 const gatePassed = progress => progress.evidence.status === "passed" && progress.explained;
-const progressLabel = progress => gatePassed(progress) ? "Gate recorded complete" : progress.evidence.status === "passed" ? "Explanation still to record" : progress.evidence.status === "failed" ? "Verification needs work" : progress.attempted ? "Implementation attempted" : progress.readings.length ? "Reading in progress" : "Ready to begin";
+const progressLabel = progress => gatePassed(progress) ? "Gate recorded complete" : progress.evidence.status === "passed" ? "Explanation still to record" : progress.evidence.status === "failed" ? "Verification needs work" : progress.attempted ? "Implementation attempted" : progress.readings.length ? "Study in progress" : "Ready to begin";
 const phase = week => week < 5 ? "THE FOUNDATIONS" : week < 9 ? "THE SYSTEMS" : "THE CAPSTONE";
 const timeLabel = minutes => minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ""}` : `${minutes}m`;
+const resourceKind = resource => resource.pdf ? "PAPER" : !resource.url ? "SYNTHESIS" : resource.url.includes("youtube.com") ? "VIDEO" : "GUIDE";
 
 function route() {
   const params = new URLSearchParams(location.hash.slice(1));
@@ -90,7 +91,7 @@ function renderNavigation() {
   }).join("");
   const complete = Object.values(overview.weeks).filter(gatePassed).length;
   $("#gate-count").textContent = `${complete} / 10 gates recorded complete`;
-  $("#curriculum-grid").innerHTML = course.weeks.map(week => `<button class="curriculum-card" data-action="week" data-week="${week.number}"><span>${pad(week.number)}</span><div><strong>${h(week.title)}</strong><small>${h(progressLabel(overview.weeks[String(week.number)]))} · 11h allocation</small></div></button>`).join("");
+  $("#curriculum-grid").innerHTML = course.weeks.map(week => `<button class="curriculum-card" data-action="week" data-week="${week.number}"><span>${pad(week.number)}</span><div><strong>${h(week.title)}</strong><small>${h(progressLabel(overview.weeks[String(week.number)]))} · 12h allocation</small></div></button>`).join("");
 }
 
 function commandRows() {
@@ -107,7 +108,7 @@ function renderChapter() {
   $("#note-path").textContent = `notes/week${pad(chapter.number)}.md`;
   $(".note-file-label").textContent = `week${pad(chapter.number)}.md`;
   $("#source-revision").textContent = `SYLLABUS ${course.revision}`;
-  $("#panel-read").innerHTML = `<div class="list-heading"><span>THREE HOURS. JUST THE ASSIGNED SECTIONS.</span><span id="reading-count"></span></div><div class="resource-grid">${chapter.resources.map((resource, i) => `<article class="paper-card" data-card="${resource.id}"><div class="paper-top"><span class="paper-number">${pad(i + 1)} / ${resource.pdf ? "PAPER" : resource.url ? "ARTICLE" : "REVISIT"}<span class="paper-next" data-next="${resource.id}"></span></span><label class="check-circle"><input type="checkbox" data-reading="${resource.id}" aria-label="Mark ${h(resource.title)} reading complete"><span></span></label></div><h3>${h(resource.title)}</h3><div class="paper-detail">${inline(resource.detail)}</div><div class="paper-assignment"><span>${resource.pdf ? "Paper + your notes" : "Source + your notes"}</span><span>${resource.minutes} min</span></div><button data-action="resource" data-resource="${resource.id}">${resource.pdf ? "Read side by side" : "Open assignment"}<span aria-hidden="true">↗</span></button></article>`).join("")}</div><p class="reading-footnote">Read the assigned sections, not every page. Reading checkboxes don’t log time or mark verification gates complete.</p><details class="foldout"><summary>The concepts to keep in mind</summary><div class="prose">${markdown(chapter.concepts)}</div></details>`;
+  $("#panel-read").innerHTML = `<div class="list-heading"><span>EIGHT HOURS. FOLLOW THE ASSIGNED SEQUENCE.</span><span id="reading-count"></span></div><div class="resource-grid">${chapter.resources.map((resource, i) => `<article class="paper-card" data-card="${resource.id}"><div class="paper-top"><span class="paper-number">${pad(i + 1)} / ${resourceKind(resource)}<span class="paper-next" data-next="${resource.id}"></span></span><label class="check-circle"><input type="checkbox" data-reading="${resource.id}" aria-label="Mark ${h(resource.title)} study complete"><span></span></label></div><h3>${h(resource.title)}</h3><div class="paper-detail">${inline(resource.detail)}</div><div class="paper-assignment"><span>${resource.pdf ? "Paper + your notes" : "Resource + your notes"}</span><span>${resource.minutes} min</span></div><button data-action="resource" data-resource="${resource.id}">${resource.pdf ? "Read side by side" : "Open assignment"}<span aria-hidden="true">↗</span></button></article>`).join("")}</div><p class="reading-footnote">Use only the assigned sections or timestamps. Resource checkboxes don’t log time or mark verification gates complete.</p><details class="foldout"><summary>The concepts to keep in mind</summary><div class="prose">${markdown(chapter.concepts)}</div></details>`;
   $("#panel-build").innerHTML = `<h3 class="implementation-heading">${chapter.number >= 9 ? "Bring the pieces together." : "Small components. Deep understanding."}</h3><div class="prose">${markdown(chapter.implementation)}</div><div class="source-actions"><a class="button secondary" href="/source/${h(chapter.exercise)}" target="_blank" rel="noopener noreferrer">Exercise contract ↗</a><a class="button secondary" href="/source/${h(chapter.tests)}" target="_blank" rel="noopener noreferrer">Test contracts ↗</a></div>${chapter.number >= 9 ? `<details class="foldout"><summary>The shared capstone scope</summary><div class="prose">${markdown(course.capstone)}</div></details>` : ""}<details class="foldout"><summary>Revisit the concepts and shapes</summary><div class="prose">${markdown(chapter.concepts)}</div></details><label class="completion-check"><input type="checkbox" data-progress="attempted"><span>I’ve attempted this week’s implementation.<small>This records an attempt; verification is recorded separately.</small></span></label><h3 class="implementation-heading">Verify in your own terminal.</h3>${commandRows()}<div class="prose">${markdown(chapter.verification)}</div>`;
   $("#panel-review").innerHTML = `<details class="foldout"><summary>How to use the two-hour review</summary><div class="prose">${markdown(course.review_format)}</div></details><h3 class="implementation-heading">Close the references. Explain it aloud.</h3><div class="prose">${markdown(chapter.review)}</div><div class="checkpoint prose"><h3>This week’s checkpoint</h3>${markdown(chapter.checkpoint)}</div>${commandRows()}<form class="evidence-form" id="evidence-form"><h3>Leave evidence, not just a checkmark.</h3><p>Manual record of a run in your terminal. This site does not run tests or infer that they passed. Include the environment, outcomes, numerical discrepancies, and memory observations where relevant.</p><label>Observed outcome<select name="status"><option value="not_run">Not yet verified</option><option value="failed">Needs work / tests failed</option><option value="passed">Required tests passed</option></select></label><label>Exact command<input name="command" maxlength="2000" required></label><label>Observed results<textarea name="summary" maxlength="20000" placeholder="Command output, environment, error bounds, byte ledger, first violated invariant…"></textarea></label><p class="form-error" id="evidence-error" role="alert" hidden></p><div class="evidence-footer"><button class="button primary" type="submit">Record outcome</button><small id="evidence-timestamp"></small></div></form><label class="completion-check"><input type="checkbox" data-progress="explained"><span>I can explain this checkpoint independently.<small>A gate is recorded complete only with passing test evidence and this explanation.</small></span></label>`;
   const evidence = weekData.progress.evidence;
@@ -126,18 +127,18 @@ function renderIndicators() {
   renderNavigation();
   const next = nextResource();
   const count = chapter.resources.filter(item => progress.readings.includes(item.id)).length;
-  $("#reading-count").textContent = `${count} / ${chapter.resources.length} read`;
+  $("#reading-count").textContent = `${count} / ${chapter.resources.length} complete`;
   $$('[data-reading]').forEach(input => { input.checked = progress.readings.includes(input.dataset.reading); });
   $$('[data-progress]').forEach(input => { input.checked = progress[input.dataset.progress]; });
   $$('[data-card]').forEach(card => card.classList.toggle("next", card.dataset.card === next?.id));
   $$('[data-next]').forEach(label => { label.textContent = label.dataset.next === next?.id ? "UP NEXT" : ""; });
   if (resourceInReader) $("#reader-complete").checked = progress.readings.includes(resourceInReader.id);
-  $("#continue-button").innerHTML = next ? `Open the reading room <span aria-hidden="true">↗</span>` : `Continue to ${progress.attempted ? "reflection" : "implementation"} <span aria-hidden="true">↗</span>`;
-  $("#next-assignment").textContent = next ? `UP NEXT · ${next.title} · ${next.minutes} min allocation` : "READINGS COMPLETE · Keep building, verifying, and explaining.";
+  $("#continue-button").innerHTML = next ? `Open the study room <span aria-hidden="true">↗</span>` : `Continue to ${progress.attempted ? "reflection" : "implementation"} <span aria-hidden="true">↗</span>`;
+  $("#next-assignment").textContent = next ? `UP NEXT · ${next.title} · ${next.minutes} min allocation` : "GUIDED STUDY COMPLETE · Keep building, verifying, and explaining.";
   $("#week-status").textContent = progressLabel(progress);
   $("#week-status").classList.toggle("complete", gatePassed(progress));
-  $("#budget-items").innerHTML = Object.entries(chapter.budget).map(([key, budget], i) => `<div class="budget-item"><div><span class="ordinal">${pad(i + 1)}</span><strong>${["Read", "Implement", "Reflect"][i]}</strong><span class="allocation">${budget / 60}h</span></div><progress max="${budget}" value="${Math.min(progress.minutes[key], budget)}" aria-label="${key}: ${progress.minutes[key]} minutes logged, ${budget} allocated"></progress><small>${timeLabel(progress.minutes[key])} logged / ${budget / 60}h allocated</small></div>`).join("");
-  $("#budget-limit").hidden = Object.values(progress.minutes).reduce((a, b) => a + b, 0) < 660;
+  $("#budget-items").innerHTML = Object.entries(chapter.budget).map(([key, budget], i) => `<div class="budget-item"><div><span class="ordinal">${pad(i + 1)}</span><strong>${["Study", "Implement", "Reflect"][i]}</strong><span class="allocation">${budget / 60}h</span></div><progress max="${budget}" value="${Math.min(progress.minutes[key], budget)}" aria-label="${key}: ${progress.minutes[key]} minutes logged, ${budget} allocated"></progress><small>${timeLabel(progress.minutes[key])} logged / ${budget / 60}h allocated</small></div>`).join("");
+  $("#budget-limit").hidden = Object.values(progress.minutes).reduce((a, b) => a + b, 0) < 720;
   $("#evidence-timestamp").textContent = progress.evidence.recorded_at ? `Recorded ${new Date(progress.evidence.recorded_at).toLocaleString()}` : "No recorded run yet";
 }
 
@@ -278,7 +279,7 @@ async function openResource(id) {
   await updateProgress(progress => { progress.active_resource = id; });
   resourceInReader = resource;
   $("#reader-title").textContent = resource.title;
-  $("#reader-kicker").textContent = `WEEK ${pad(chapter.number)} · ${resource.minutes} MIN READING ALLOCATION`;
+  $("#reader-kicker").textContent = `WEEK ${pad(chapter.number)} · ${resource.minutes} MIN GUIDED STUDY`;
   $("#reader-assignment").innerHTML = markdown(resource.assignment);
   const original = $("#reader-original");
   original.hidden = !resource.url;
@@ -290,7 +291,7 @@ async function openResource(id) {
   else frame.removeAttribute("src");
   $("#reader-fallback").hidden = Boolean(resource.pdf);
   $(".pdf-help").hidden = !resource.pdf;
-  $("#reader-revisit").innerHTML = !resource.url ? `<p>Use the earlier chapters’ readings and your own notes for this assignment.</p><a href="/source/SYLLABUS.md" target="_blank" rel="noopener noreferrer">Open source syllabus ↗</a>` : "";
+  $("#reader-revisit").innerHTML = !resource.url ? `<p>Use the earlier resources and your own notes for this synthesis assignment.</p><a href="/source/SYLLABUS.md" target="_blank" rel="noopener noreferrer">Open source syllabus ↗</a>` : "";
   $("#reader-complete").checked = weekData.progress.readings.includes(id);
   $("#reader-dialog").showModal();
 }

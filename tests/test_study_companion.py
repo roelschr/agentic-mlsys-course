@@ -51,22 +51,29 @@ def test_all_ten_weeks_are_generated_from_the_syllabus():
     assert "TinyDecoder" not in course["weeks"][7]["review"]
     assert "30m: derive" in course["review_format"]
     for week in course["weeks"]:
-        assert sum(resource["minutes"] for resource in week["resources"]) == 180
-        assert sum(week["budget"].values()) == 660
+        assert sum(resource["minutes"] for resource in week["resources"]) == 480
+        assert week["budget"] == {"reading": 480, "implementation": 120, "review": 120}
         assert week["concepts"] and week["implementation"] and week["review"] and week["checkpoint"]
         assert all(command.startswith("uv run --locked --extra dev python -m pytest") for command in week["commands"])
-        assert len({resource["id"] for resource in week["resources"]}) == len(week["resources"]) == 4
+        assert len({resource["id"] for resource in week["resources"]}) == len(week["resources"])
+        assert 7 <= len(week["resources"]) <= 8
         assert week["resources"][0]["url"] and week["resources"][0]["pdf"] is None
-        assert all("**Check:**" in resource["assignment"] for resource in week["resources"])
+        assert all(all(label in resource["assignment"] for label in ("Prerequisite:", "Purpose:", "**Check:**"))
+                   for resource in week["resources"])
+        urls = [resource["url"] for resource in week["resources"]]
+        assert any(url and "youtube.com" in url for url in urls)
+        assert 1 <= sum(bool(url and "arxiv.org" in url) for url in urls) <= 2
+        assert any(url and "youtube.com" not in url and "arxiv.org" not in url for url in urls)
+        assert any(url is None for url in urls)
     attention = course["weeks"][2]["resources"][0]
     assert attention["url"] == "https://www.youtube.com/watch?v=eMlx5fFNoYc"
     assert "00:00–26:09" in attention["assignment"]
     assert "https://www.3blue1brown.com/lessons/attention/" in attention["assignment"]
-    gqa = course["weeks"][2]["resources"][2]
+    gqa = course["weeks"][2]["resources"][3]
     assert gqa["url"] == "https://arxiv.org/abs/2305.13245"
     assert gqa["pdf"] == "https://arxiv.org/pdf/2305.13245"
     assert "Figure 2" in gqa["assignment"]
-    assert course["weeks"][8]["resources"][3]["url"] is None
+    assert course["weeks"][8]["resources"][5]["url"] is None
     assert len(course["weeks"][9]["commands"]) == 2
 
 
@@ -74,10 +81,10 @@ def test_source_edits_change_content_without_touching_saved_work(tmp_path):
     source = (REPO / "SYLLABUS.md").read_text()
     (tmp_path / "SYLLABUS.md").write_text(source)
     before = load_course(tmp_path)
-    (tmp_path / "SYLLABUS.md").write_text(source.replace("§2 and Figure 2.", "§2 and Figure 2; annotate the shapes."))
+    (tmp_path / "SYLLABUS.md").write_text(source.replace("Read §2.2 and\n  Figure 2", "Read §2.2 and\n  Figure 2; annotate the shapes"))
     after = load_course(tmp_path)
     assert before["revision"] != after["revision"]
-    assert before["weeks"][2]["resources"][2]["id"] != after["weeks"][2]["resources"][2]["id"]
+    assert before["weeks"][2]["resources"][3]["id"] != after["weeks"][2]["resources"][3]["id"]
     assert before["weeks"][0] == after["weeks"][0]
 
 
