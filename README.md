@@ -2,7 +2,7 @@
 
 A ten-week, self-paced course for an experienced ML systems engineer rebuilding
 mathematical fluency and low-level implementation intuition. **Budget: exactly
-11 hours per week, 110 hours total.** Eight weeks of small drills lead into one
+12 hours per week, 120 hours total.** Eight weeks of small drills lead into one
 two-week decoder training, alignment, and cached-inference capstone.
 
 The repository deliberately starts with **unsolved skeletons and failing tests**.
@@ -44,6 +44,23 @@ agentic-mlsys-course/
 
 `notes/` and `artifacts/` are created by you when first needed. Environment-specific
 and existing hidden configuration files are omitted from the tree.
+
+## Local study companion
+
+For a desktop reading workspace with a dark Field Guide layout, side-by-side
+papers and notes, and locally saved progress, run from the repository root:
+
+```bash
+python -m study_companion
+```
+
+Open **http://localhost:8765**. The companion uses Python's standard library and
+reads all ten weeks directly from `SYLLABUS.md`. Notes autosave to `notes/weekNN.md`;
+progress lives in Git-ignored `.study-companion/progress.json`. Time logging is
+optional and editable, and the focus timer never logs time automatically.
+
+See [the companion guide](study_companion/README.md) for file locations, the
+reading pane, conflict recovery, startup options, and its independent test command.
 
 ## Local environment
 
@@ -109,7 +126,7 @@ test should execute rather than skip; it will still fail while the cache is an
 unsolved stub. The GPU's availability does not automatically move other tests
 to CUDA. Keep device placement explicit instead of changing PyTorch's global
 default device. GPU experiments replace their CPU worksheet alternatives within
-the same 11-hour week.
+the same 12-hour week.
 
 ### Fresh environment setup (venv/pip alternative)
 
@@ -143,10 +160,14 @@ in capstone assembly. No tokenizer package or downloaded dataset is required.
 
 ## Study workflow
 
-1. Open [SYLLABUS.md](SYLLABUS.md). Reserve **3h reading + 6h coding + 2h review**.
-   Reading means the named equations/sections, not every page of every source.
+1. Open [SYLLABUS.md](SYLLABUS.md). Reserve **8h study + 2h coding + 2h review**.
+   The reading allocation includes listening and watching. Follow the listed
+   sequence: approachable explanations first, targeted paper excerpts afterward.
+   Each allowance includes pauses, notes, and its comprehension question. Use a
+   video's text alternative instead of the video, not in addition to it; stop at
+   the named sections or timestamps rather than completing whole sites/playlists.
 2. Derive the formula, annotate shapes and dtypes, and predict two edge cases in
-   `notes/weekNN.md` before implementing. This is part of the coding allocation.
+   `notes/weekNN.md` before implementing. The syllabus budgets this in guided study.
 3. Implement only that week's one or two stubs. Keep each component under 150
    implementation lines. Run `python -m pytest tests/test_weekNN.py -q` often.
 4. Use the last two hours for the four grill questions and a pytest-backed review:
@@ -154,7 +175,7 @@ in capstone assembly. No tokenizer package or downloaded dataset is required.
    An agent may ask questions and explain invariants, but cannot fill in code.
 5. Mark the syllabus checkpoint only when numerical tests pass and you can explain
    the result without reading the implementation. Record unresolved questions.
-   At hour 11, stop. If necessary, repeat the week in a later calendar slot;
+   At hour 12, stop. If necessary, repeat the week in a later calendar slot;
    ten learning weeks need not mean ten consecutive calendar weeks.
 
 ```bash
