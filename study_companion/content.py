@@ -80,13 +80,17 @@ def load_course(repo):
         })
     if [week["number"] for week in weeks] != list(range(1, 11)):
         raise ValueError("The syllabus must contain Weeks 1–10 in order.")
-    pacing = next(body for title, body in chapters if title == "Contract and pacing")
-    review_format = next(body for title, body in sections(pacing, 3) if title.startswith("Reusable review"))
+    try:
+        pacing = next(body for title, body in chapters if title == "Contract and pacing")
+        review_format = next(body for title, body in sections(pacing, 3) if title.startswith("Reusable review"))
+        capstone = next(body for title, body in chapters if title.startswith("Weeks 9"))
+    except StopIteration as error:
+        raise ValueError("The syllabus is missing a required course section.") from error
     return {
         "title": "MLSys Field Guide",
         "revision": hashlib.sha256(markdown.encode()).hexdigest()[:12],
         "pacing": pacing.split("### Tracking")[0].strip(),
         "review_format": review_format,
-        "capstone": next(body for title, body in chapters if title.startswith("Weeks 9")),
+        "capstone": capstone,
         "weeks": weeks,
     }

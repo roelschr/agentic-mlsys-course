@@ -126,7 +126,7 @@ test should execute rather than skip; it will still fail while the cache is an
 unsolved stub. The GPU's availability does not automatically move other tests
 to CUDA. Keep device placement explicit instead of changing PyTorch's global
 default device. GPU experiments replace their CPU worksheet alternatives within
-the same 11-hour week.
+the same 12-hour week.
 
 ### Fresh environment setup (venv/pip alternative)
 

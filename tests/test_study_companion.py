@@ -232,3 +232,30 @@ def test_http_scope_origin_and_malformed_requests(server):
     assert server.store.state()["current_week"] == 1
     assert request(server, "PUT", "/api/current", {"week": 10})[0] == 200
     assert request(server, "GET", "/api/state")[1]["current_week"] == 10
+
+
+def test_malformed_live_syllabus_returns_json_error(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    source = (REPO / "SYLLABUS.md").read_text()
+    syllabus = repo / "SYLLABUS.md"
+    syllabus.write_text(source)
+    httpd = StudyServer(("127.0.0.1", 0), repo, tmp_path / "state", tmp_path / "notes")
+    worker = threading.Thread(target=httpd.serve_forever, daemon=True)
+    worker.start()
+    try:
+        syllabus.write_text(source.replace("## Contract and pacing", "## Pacing"))
+        status, data = request(httpd, "GET", "/api/course")
+        assert status == 503
+        assert "Could not read course data" in data["error"]
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        worker.join(timeout=5)
+
+
+def test_static_ui_supports_narrow_viewports_and_budget_docs_agree():
+    css = (REPO / "study_companion/static/styles.css").read_text()
+    assert "min-width:1060px" not in css
+    assert "@media (max-width:760px)" in css
+    assert "11-hour week" not in (REPO / "README.md").read_text()
